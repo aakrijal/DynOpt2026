@@ -38,7 +38,7 @@ savefig("s1_objective.png")
 #         as an anonymous function.
 #         result = optimize(x -> ..., 0.0, s_bar)
 
-
+result  = optimize(x -> -W(x), 0.0, s_bar)
 x_optim = Optim.minimizer(result)
 println("Optim:  x* = ", x_optim)
 
@@ -51,6 +51,8 @@ set_silent(model)
 #         @variable(model, ... <= x <= ..., start = s_bar / 2)
 #         @objective(model, Max, ...)
 
+@variable(model, 0 <= x <= s_bar, start = s_bar / 2)
+@objective(model, Max, α_1 * x^β_1 + α_2 * (s_bar - x)^β_2)
 
 
 print(model)
@@ -64,7 +66,7 @@ println("JuMP:   x* = ", x_jump, "   (", termination_status(model), ")")
 #         x_jump. It should be zero up to the solver's tolerance.
 #         residual = ...
 
-
+residual = dF(x_jump) - dU(s_bar - x_jump)
 println("FOC residual F'(x) - U'(4 - x) = ", residual)
 println("Optim and JuMP agree: ", isapprox(x_optim, x_jump; atol = 1e-6))
 
@@ -99,7 +101,7 @@ function static_paths(s_grid)
     for i in 1:n
         # TODO 4. Solve the static problem at s_grid[i] and store the three
         #         results in position i of the three vectors.
-
+        x_path[i], z_path[i], W_path[i] = solve_static(s_grid[i])
 
     end
     return x_path, z_path, W_path
